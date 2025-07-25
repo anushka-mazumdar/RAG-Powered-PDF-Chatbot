@@ -1,7 +1,7 @@
 
-# 📚 RAG-Powered PDF Chatbot using LangChain, ChromaDB & FastAPI
+# 📚 RAG-Powered PDF Chatbot using Transformers, LangChain & FastAPI
 
-A private document-based chatbot that allows users to upload their own PDF files and ask questions directly based on their content. The chatbot uses **Retrieval-Augmented Generation (RAG)** to generate accurate answers by searching only within your uploaded content — not the internet.
+A private document-based chatbot that allows users to upload their own PDF files and ask questions directly based on their content. The chatbot uses **Retrieval-Augmented Generation (RAG)** to generate accurate answers by searching only within your uploaded documents — not the internet.
 
 ---
 
@@ -10,10 +10,10 @@ A private document-based chatbot that allows users to upload their own PDF files
 - 📂 Upload your own PDF documents
 - 💬 Ask natural language questions about them
 - 🧠 Uses **LangChain + ChromaDB** for retrieval
-- 🤖 Powered by **Hugging Face LLMs (Flan-T5)**
-- ⚡ Backend with **FastAPI**
-- 🔐 Firebase integration (coming soon): authentication, secure storage
-- 🌐 Frontend (React + Firebase SDK) planned in next phase
+- 🤖 Answered using local **Transformers (e.g., T5 or Mistral)**
+- ⚡ FastAPI backend for APIs
+- 🔐 Firebase integration (frontend only, optional)
+- 🌐 Frontend with Firebase SDK (planned for next phase)
 
 ---
 
@@ -22,40 +22,37 @@ A private document-based chatbot that allows users to upload their own PDF files
 | Layer         | Technology |
 |---------------|------------|
 | Embeddings    | HuggingFace MiniLM (`all-MiniLM-L6-v2`) |
-| Vector Store  | ChromaDB (Local persistent store) |
-| LLM           | `flan-t5-base` from Hugging Face Inference API |
-| Chain         | LangChain `RetrievalQA` |
+| Vector Store  | ChromaDB (local persistent store) |
+| LLM           | Local Transformer via `transformers` pipeline (`flan-t5-base`, `mistral-7b-instruct`, etc.) |
+| Retrieval     | Custom retrieval + prompt construction |
 | PDF Parsing   | PyPDF2 |
 | Backend       | FastAPI + Uvicorn |
 | Environment   | Python 3.10+ |
-| Auth & Storage| Firebase (to be added in Stage 4) |
+| Frontend Auth | Firebase (optional) |
 
 ---
 
 ## 📁 Project Structure
 
 ```
-chatbot/
+pdf-chatbot/
 ├── backend/
-│   ├── __pycache__/              ← Python cache
 │   ├── chroma_store/             ← Chroma vector DB files
 │   ├── uploads/                  ← Uploaded PDFs
 │   ├── utils/
-│   │   ├── __pycache__/
-│   │   ├── embedder.py           ← Embedding generator
+│   │   ├── embedder.py           ← Embedding generator using MiniLM
 │   │   ├── parser.py             ← PDF text extractor
-│   │   └── retriever.py          ← LangChain QA chain with Hugging Face
-│   ├── app.py                    ← FastAPI backend
-│   └── .env                      ← Hugging Face API key 
+│   │   └── retriever.py          ← Vector search + local transformer pipeline
+│   ├── app.py                    ← FastAPI backend (file upload + chat)
+│   └── .env                      ← (Optional) reserved for secrets
 │
 ├── firebase/
 │   └── functions/
-│       └── index.js              ← Placeholder for Firebase Functions (planned)
+│       └── index.js              ← Placeholder for Firebase Functions (frontend)
 │
-├── frontend/                     ← Frontend app (React planned)
-│
-├── requirements.txt              ← Python dependencies
-├── package.json                  ← Node project dependencies (for Firebase/Frontend)
+├── frontend/                     ← React + Firebase SDK planned
+├── requirements.txt              ← Python backend dependencies
+├── package.json                  ← Node dependencies (for Firebase/Frontend)
 └── .gitignore                    ← Git ignored files/folders
 ```
 
@@ -73,8 +70,8 @@ cd pdf-rag-chatbot/backend
 ### 2. Create a Virtual Environment
 
 ```bash
-python -m venv venv
-source venv/bin/activate  # or venv\Scripts\activate on Windows
+python -m venv .venv
+source .venv/bin/activate  # or .venv\Scripts\activate on Windows
 ```
 
 ### 3. Install Dependencies
@@ -83,21 +80,12 @@ source venv/bin/activate  # or venv\Scripts\activate on Windows
 pip install -r requirements.txt
 ```
 
-If `requirements.txt` isn't created yet, run:
+If `requirements.txt` isn't ready, run:
+
 ```bash
-pip install fastapi uvicorn python-multipart langchain langchain-community chromadb huggingface_hub python-dotenv PyPDF2 sentence-transformers
+pip install fastapi uvicorn python-multipart langchain langchain-community chromadb sentence-transformers PyPDF2 transformers
 pip freeze > requirements.txt
 ```
-
-### 4. Add Hugging Face API Key
-
-Create a `.env` file in the `backend/` folder:
-
-```
-HUGGINGFACEHUB_API_TOKEN=your_token_here
-```
-
-Get your token from: https://huggingface.co/settings/tokens
 
 ---
 
@@ -107,22 +95,23 @@ Get your token from: https://huggingface.co/settings/tokens
 uvicorn app:app --reload
 ```
 
-Go to: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)  
+Open your browser:  
+[http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)  
 Use Swagger UI to:
-- Upload a `.pdf` file via `/upload`
-- Ask questions via `/ask`
+- Upload `.pdf` file via `/upload`
+- Ask a question via `/ask`
 
 ---
 
 ## 📌 Notes
-
-- Works best with **text-based PDFs** (not scanned images)
-- Uses local ChromaDB to persist vectors
-- LLM queries are sent to Hugging Face via API
-- You can swap `flan-t5-base` with other supported models (like `tiiuae/falcon-7b-instruct`)
-
+- Works best with **text-based PDFs** (not scanned image PDFs)
+- Uses **LangChain only for embeddings + vector DB**
+- Answers are generated using **local Transformer models** via HuggingFace `pipeline()`
+- Can switch between models like `flan-t5-base`, `mistral-7b-instruct`, or `t5-small` easily
 ---
+
 ⚠️ Note: This project is currently a work in progress. New features like Firebase integration and a frontend interface are actively being developed.
+
 ---
 ## 🙋‍♂️ Author
 
