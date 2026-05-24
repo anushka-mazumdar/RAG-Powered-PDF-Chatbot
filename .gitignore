@@ -34,3 +34,4 @@ htmlcov/
 *.log
 *.log.*
 chroma_store/__pycache__/
+.env
