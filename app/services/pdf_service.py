@@ -13,6 +13,25 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+def chunk_text(text: str) -> list[str]:
+    """Split text into overlapping chunks for better retrieval."""
+    chunk_size = settings.CHUNK_SIZE
+    overlap = settings.CHUNK_OVERLAP
+    chunks = []
+    start = 0
+
+    while start < len(text):
+        end = start + chunk_size
+        chunk = text[start:end].strip()
+        if chunk:
+            chunks.append(chunk)
+        if end >= len(text):
+            break
+        start = max(end - overlap, start + 1)
+
+    return chunks
+
+
 class PDFService:
     """Service for handling PDF upload and processing"""
     
@@ -31,24 +50,29 @@ class PDFService:
             Exception: If processing fails
         """
         try:
+            if not file.filename or not file.filename.lower().endswith(".pdf"):
+                raise ValueError("Please upload a PDF file.")
+
             # Save uploaded file
-            file_path = settings.UPLOAD_DIR / file.filename
+            safe_filename = Path(file.filename).name
+            file_path = settings.UPLOAD_DIR / safe_filename
             
             with open(file_path, "wb") as buffer:
                 shutil.copyfileobj(file.file, buffer)
             
             logger.info(f"File saved: {file_path}")
             
-            # Load and embed
+            # Load, chunk, and embed
             text = load_pdf(str(file_path))
-            embed_docs([text])
+            chunks = chunk_text(text)
+            embed_docs(chunks)
             
             logger.info(f"Successfully processed PDF: {file.filename}")
             
             return {
                 "success": True,
-                "filename": file.filename,
-                "message": f"{file.filename} uploaded and embedded successfully."
+                "filename": safe_filename,
+                "message": f"{safe_filename} uploaded and embedded successfully."
             }
             
         except Exception as e:

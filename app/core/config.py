@@ -50,6 +50,8 @@ class Settings:
     MAX_CONTEXT_DOCS = int(os.getenv("MAX_CONTEXT_DOCS", "3"))
     MAX_NEW_TOKENS = int(os.getenv("MAX_NEW_TOKENS", "256"))
     TEMPERATURE = float(os.getenv("TEMPERATURE", "0.3"))
+    CHUNK_SIZE = int(os.getenv("CHUNK_SIZE", "900"))
+    CHUNK_OVERLAP = int(os.getenv("CHUNK_OVERLAP", "150"))
     
     # Device
     DEVICE = int(os.getenv("DEVICE", "-1"))  # -1 for CPU, 0+ for GPU

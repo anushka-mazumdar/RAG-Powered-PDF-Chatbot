@@ -22,7 +22,10 @@ def load_pdf(path: str) -> str:
     """
     try:
         reader = PdfReader(path)
-        text = "\n".join([page.extract_text() for page in reader.pages])
+        page_text = [page.extract_text() or "" for page in reader.pages]
+        text = "\n".join(page_text).strip()
+        if not text:
+            raise ValueError("No readable text found in this PDF.")
         logger.info(f"Successfully loaded PDF: {path}")
         return text
     except Exception as e:

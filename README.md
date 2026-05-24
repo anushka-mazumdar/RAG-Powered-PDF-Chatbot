@@ -8,7 +8,7 @@ A production-ready **Retrieval-Augmented Generation (RAG)** based conversational
 ## 🚀 Features
 
 - 📄 **PDF Upload & Processing** - Upload PDFs and automatically extract and embed text
-- 🤖 **Intelligent Q&A** - Ask context-aware questions using RAG with local LLMs
+- 🤖 **Conversational Assistant** - Handles normal chat, greetings, and PDF-grounded questions
 - 🔄 **Vector Search** - Fast semantic search using Chroma vector database
 - 🎨 **Interactive Frontend** - Clean web interface for document management
 - 📋 **Professional Structure** - Industry-standard FastAPI project layout
@@ -54,7 +54,7 @@ app/
 | **API Docs** | Auto-generated Swagger/OpenAPI |
 | **Embeddings** | HuggingFace (all-MiniLM-L6-v2) |
 | **Vector DB** | ChromaDB (persistent) |
-| **LLM** | Flan-T5 (local inference) |
+| **LLM** | Flan-T5 local inference (configurable) |
 | **PDF Parsing** | PyPDF2 |
 | **Data Validation** | Pydantic v2 |
 | **Configuration** | Python-dotenv |
@@ -182,7 +182,11 @@ DEVICE=-1                           # -1=CPU, 0+=GPU
 MAX_CONTEXT_DOCS=3                  # Context documents
 MAX_NEW_TOKENS=256                  # Response length
 TEMPERATURE=0.3                     # Creativity (0.0-1.0)
+CHUNK_SIZE=900                      # Characters per document chunk
+CHUNK_OVERLAP=150                   # Overlap between chunks
 ```
+
+For a stronger local model, you can try `LLM_MODEL=google/flan-t5-base`, but it is slower on CPU and may take a while to load the first time.
 
 ---
 

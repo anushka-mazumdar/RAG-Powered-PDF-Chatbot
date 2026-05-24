@@ -9,17 +9,26 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-# Load local text-to-text model
-try:
-    local_model = pipeline(
-        "text2text-generation",
-        model=settings.LLM_MODEL,
-        device=settings.DEVICE
-    )
-    logger.info(f"Successfully loaded LLM model: {settings.LLM_MODEL}")
-except Exception as e:
-    logger.error(f"Error loading LLM model: {str(e)}")
-    local_model = None
+local_model = None
+
+
+def get_local_model():
+    """Load the local LLM only when the first question is asked."""
+    global local_model
+    if local_model is not None:
+        return local_model
+
+    try:
+        local_model = pipeline(
+            "text2text-generation",
+            model=settings.LLM_MODEL,
+            device=settings.DEVICE
+        )
+        logger.info(f"Successfully loaded LLM model: {settings.LLM_MODEL}")
+        return local_model
+    except Exception as e:
+        logger.error(f"Error loading LLM model: {str(e)}")
+        return None
 
 
 def get_relevant_context(question: str) -> str:
@@ -40,11 +49,11 @@ def get_relevant_context(question: str) -> str:
             persist_directory=str(settings.CHROMA_STORE_DIR),
             embedding_function=HuggingFaceEmbeddings(model_name=settings.EMBEDDING_MODEL)
         )
-        retriever = vectordb.as_retriever()
+        retriever = vectordb.as_retriever(
+            search_kwargs={"k": settings.MAX_CONTEXT_DOCS}
+        )
         docs = retriever.get_relevant_documents(question)
-        context = "\n".join([
-            doc.page_content for doc in docs[:settings.MAX_CONTEXT_DOCS]
-        ])
+        context = "\n\n".join([doc.page_content for doc in docs])
         logger.info(f"Retrieved context for question: {question}")
         return context
     except Exception as e:
@@ -65,7 +74,8 @@ def answer_question(question: str) -> str:
     Raises:
         Exception: If answer generation fails
     """
-    if not local_model:
+    model = get_local_model()
+    if not model:
         logger.error("LLM model not loaded")
         return "Sorry, the language model is not available. Please try again later."
     
@@ -77,13 +87,16 @@ def answer_question(question: str) -> str:
             return "I couldn't find relevant information in the uploaded documents to answer your question."
         
         prompt = (
-            f"Answer the following question based on the context:\n\n"
-            f"Context:\n{context}\n\n"
-            f"Question: {question}\n"
-            f"Answer:"
+            "You are a helpful PDF assistant. Answer the user's question using "
+            "only the document context below. Be conversational, direct, and "
+            "concise. If the answer is not in the context, say that you could "
+            "not find it in the uploaded PDF.\n\n"
+            f"Document context:\n{context}\n\n"
+            f"User question: {question}\n"
+            "Assistant answer:"
         )
         
-        result = local_model(
+        result = model(
             prompt,
             max_new_tokens=settings.MAX_NEW_TOKENS,
             temperature=settings.TEMPERATURE
@@ -96,3 +109,43 @@ def answer_question(question: str) -> str:
     except Exception as e:
         logger.error(f"Error generating answer: {str(e)}")
         return "Sorry, I couldn't generate a response. Please try again."
+
+
+def format_chat_history(history: list[dict]) -> str:
+    lines = []
+    for item in history[-8:]:
+        speaker = "User" if item["role"] == "user" else "Assistant"
+        lines.append(f"{speaker}: {item['content']}")
+    return "\n".join(lines)
+
+
+def generate_chat_response(message: str, history: list[dict] | None = None) -> str:
+    """
+    Generate a general chatbot response without using document retrieval.
+    """
+    model = get_local_model()
+    if not model:
+        logger.error("LLM model not loaded")
+        return "I'm here and ready to help. Ask me about a PDF, or just tell me what you want to work on."
+
+    try:
+        chat_history = format_chat_history(history or [])
+        history_block = f"Recent conversation:\n{chat_history}\n\n" if chat_history else ""
+        prompt = (
+            "You are a friendly, helpful chatbot inside a PDF assistant app. "
+            "Reply naturally to the user. Do not mention PDF content unless the "
+            "user asks about a document.\n\n"
+            f"{history_block}"
+            f"User: {message}\n"
+            "Assistant:"
+        )
+        result = model(
+            prompt,
+            max_new_tokens=min(settings.MAX_NEW_TOKENS, 160),
+            temperature=settings.TEMPERATURE
+        )
+        answer = result[0]["generated_text"].strip()
+        return answer or "I'm here. What would you like to chat about?"
+    except Exception as e:
+        logger.error(f"Error generating chat response: {str(e)}")
+        return "I'm here. What would you like to chat about?"

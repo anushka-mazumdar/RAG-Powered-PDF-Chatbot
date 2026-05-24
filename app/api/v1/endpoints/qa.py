@@ -6,6 +6,7 @@ from app.services.qa_service import QAService
 from app.schemas.response import AnswerResponse
 import logging
 import traceback
+import json
 
 logger = logging.getLogger(__name__)
 
@@ -13,7 +14,7 @@ router = APIRouter(prefix="/qa", tags=["qa"])
 
 
 @router.post("/ask", response_model=AnswerResponse)
-async def ask_question(question: str = Form(...)):
+async def ask_question(question: str = Form(...), history: str = Form("")):
     """
     Ask a question and get an answer based on uploaded documents.
     
@@ -21,7 +22,11 @@ async def ask_question(question: str = Form(...)):
     """
     try:
         logger.info(f"Received question: {question}")
-        result = QAService.answer(question)
+        try:
+            parsed_history = json.loads(history) if history else []
+        except json.JSONDecodeError:
+            parsed_history = []
+        result = QAService.answer(question, parsed_history)
         return AnswerResponse(
             question=result["question"],
             answer=result["answer"]

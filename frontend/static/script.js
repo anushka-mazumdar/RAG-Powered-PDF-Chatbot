@@ -27,6 +27,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Current active chat name
   let activeChat = null;
+  let conversationHistory = [];
+
+  function getApiError(data, fallback) {
+    if (!data) return fallback;
+    return data.detail || data.error || data.message || fallback;
+  }
 
   // Utility: create list item with delete button
   function createListItem(name, type) {
@@ -56,8 +62,10 @@ document.addEventListener("DOMContentLoaded", () => {
             chats.splice(index, 1);
             localStorage.setItem("chats", JSON.stringify(chats));
           }
+          localStorage.removeItem(`chathistory_${name}`);
           if (activeChat === name) {
             activeChat = null;
+            conversationHistory = [];
             chatLog.innerHTML = "";
           }
         }
@@ -99,6 +107,10 @@ document.addEventListener("DOMContentLoaded", () => {
     localStorage.setItem(`chatlog_${chatName}`, logHtml);
   }
 
+  function saveChatHistory(chatName) {
+    localStorage.setItem(`chathistory_${chatName}`, JSON.stringify(conversationHistory.slice(-12)));
+  }
+
   // Load chat log for a chat
   function loadChat(chatName) {
     activeChat = chatName;
@@ -109,13 +121,15 @@ document.addEventListener("DOMContentLoaded", () => {
     // Load chat log from localStorage
     const logHtml = localStorage.getItem(`chatlog_${chatName}`) || "";
     chatLog.innerHTML = logHtml;
+    conversationHistory = JSON.parse(localStorage.getItem(`chathistory_${chatName}`) || "[]");
   }
 
   // Load uploaded documents from backend
   async function loadDocs() {
     try {
-      const res = await fetch("/uploads");
+      const res = await fetch("/api/v1/pdf/uploads");
       const data = await res.json();
+      if (!res.ok) throw new Error(getApiError(data, "Failed to load documents."));
       if (data.files && Array.isArray(data.files)) {
         docsList.innerHTML = "";
         data.files.forEach(fileName => {
@@ -153,6 +167,8 @@ document.addEventListener("DOMContentLoaded", () => {
           chatsList.appendChild(newChat);
           chats.push(chatName);
           saveChats(chats);
+          conversationHistory = [];
+          saveChatHistory(chatName);
           loadChat(chatName);
         };
       } else {
@@ -180,6 +196,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // Append user question to chat log
+    const historyForRequest = conversationHistory.slice(-8);
     const userMsg = document.createElement("div");
     userMsg.className = "bot-message";
     userMsg.innerHTML = `<div class="bubble" style="background:#dbeafe">${question}</div><div class="timestamp">You • just now</div>`;
@@ -190,11 +207,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Send question to backend and get answer
     try {
-      const res = await fetch("/ask", {
+      const res = await fetch("/api/v1/qa/ask", {
         method: "POST",
-        body: new URLSearchParams({ question })
+        body: new URLSearchParams({
+          question,
+          history: JSON.stringify(historyForRequest)
+        })
       });
       const data = await res.json();
+      if (!res.ok) throw new Error(getApiError(data, "Sorry, something went wrong."));
 
       // Append bot answer to chat log
       const botMsg = document.createElement("div");
@@ -204,16 +225,22 @@ document.addEventListener("DOMContentLoaded", () => {
       chatLog.scrollTop = chatLog.scrollHeight;
 
       // Save chat log
+      conversationHistory.push({ role: "user", content: question });
+      conversationHistory.push({ role: "assistant", content: data.answer || "Sorry, something went wrong." });
       saveChatLog(activeChat, chatLog.innerHTML);
-    } catch {
+      saveChatHistory(activeChat);
+    } catch (error) {
       const botMsg = document.createElement("div");
       botMsg.className = "bot-message";
-      botMsg.innerHTML = `<div class="bubble">Sorry, something went wrong.</div><div class="timestamp">Bot • just now</div>`;
+      botMsg.innerHTML = `<div class="bubble">${error.message || "Sorry, something went wrong."}</div><div class="timestamp">Bot • just now</div>`;
       chatLog.appendChild(botMsg);
       chatLog.scrollTop = chatLog.scrollHeight;
 
       // Save chat log
+      conversationHistory.push({ role: "user", content: question });
+      conversationHistory.push({ role: "assistant", content: error.message || "Sorry, something went wrong." });
       saveChatLog(activeChat, chatLog.innerHTML);
+      saveChatHistory(activeChat);
     }
   };
 
@@ -226,11 +253,12 @@ document.addEventListener("DOMContentLoaded", () => {
     formData.append("file", file);
 
     try {
-      const res = await fetch("/upload", {
+      const res = await fetch("/api/v1/pdf/upload", {
         method: "POST",
         body: formData
       });
       const data = await res.json();
+      if (!res.ok) throw new Error(getApiError(data, "Upload failed. Please try again."));
 
       if (data.message) {
         // Add uploaded document to docs list
@@ -239,8 +267,8 @@ document.addEventListener("DOMContentLoaded", () => {
       } else if (data.error) {
         alert(data.error);
       }
-    } catch {
-      alert("Upload failed. Please try again.");
+    } catch (error) {
+      alert(error.message || "Upload failed. Please try again.");
     }
   };
 

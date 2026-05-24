@@ -11,6 +11,8 @@ import logging
 from app.core.config import settings
 from app.api.v1.router import router as api_v1_router
 from app.api.health import router as health_router
+from app.api.v1.endpoints.pdf import list_uploads, upload_pdf
+from app.api.v1.endpoints.qa import ask_question
 
 # Configure logging
 logging.basicConfig(
@@ -49,6 +51,11 @@ def create_app() -> FastAPI:
     # Include routers
     app.include_router(health_router)
     app.include_router(api_v1_router, prefix=settings.API_PREFIX)
+    
+    # Backward-compatible routes for older frontend/cache requests
+    app.add_api_route("/uploads", list_uploads, methods=["GET"], include_in_schema=False)
+    app.add_api_route("/upload", upload_pdf, methods=["POST"], include_in_schema=False)
+    app.add_api_route("/ask", ask_question, methods=["POST"], include_in_schema=False)
     
     # Serve frontend
     @app.get("/")
