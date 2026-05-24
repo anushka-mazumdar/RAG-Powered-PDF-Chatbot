@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    container_name: rag-chatbot
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUG=False
+      - HOST=0.0.0.0
+      - PORT=8000
+      - EMBEDDING_MODEL=all-MiniLM-L6-v2
+      - LLM_MODEL=google/flan-t5-small
+      - DEVICE=-1
+      - MAX_CONTEXT_DOCS=3
+      - MAX_NEW_TOKENS=256
+      - TEMPERATURE=0.3
+    volumes:
+      - ./uploads:/app/uploads
+      - ./chroma_store:/app/chroma_store
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s

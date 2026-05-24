@@ -1,0 +1,320 @@
+body {
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  background-color: var(--bg);
+  color: var(--text);
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+/* Base Theme Variables */
+:root {
+  --deep-purple: #5b2dc5;
+  --light-purple: #7854f7;
+  --bg: #ffffff;
+  --text: #1a1a1a;
+  --sidebar-bg: #f9f9fb;
+  --chat-bg: #ffffff;
+  --bubble-bg: #f1f1f1;
+  --badge-bg: #e0e0e0;
+  --toggle-color: #d1d1d1;
+}
+
+body.dark {
+  --bg: #121212;
+  --text: #f0f0f0;
+  --sidebar-bg: #1e1e1e;
+  --chat-bg: #1a1a1a;
+  --bubble-bg: #2a2a2a;
+  --badge-bg: #3a3a3a;
+  --toggle-color: #ffffff55;
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  background-color: var(--bg);
+  color: var(--text);
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+/* Layout */
+.app-container {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 300px; /* fixed width */
+  min-width: 300px;
+  max-width: 300px;
+  background-color: var(--sidebar-bg);
+  border-right: 1px solid #ddd;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.3s ease;
+  z-index: 10;
+  box-sizing: border-box;
+  overflow-y: auto;
+  flex-shrink: 0; /* prevent shrinking */
+}
+
+.sidebar.hidden {
+  transform: translateX(-100%);
+}
+<<<<<<< SEARCH
+
+body.dark .bot-message .bubble[style*="background:#dbeafe"] {
+  color: black !important;
+  background-color: #dbeafe !important; /* keep background same */
+}
+=======
+body.dark .bot-message .bubble[style*="background:#dbeafe"] {
+  color: black !important;
+  background-color: #dbeafe !important; /* keep background same */
+}
+
+/* Ensure user text color is black in dark mode for user message bubbles */
+body.dark .bot-message .bubble[style*="background:#dbeafe"] {
+  color: black !important;
+}
+
+/* Sidebar Toggle Button */
+.sidebar-toggle {
+  width: 30px;
+  height: 40px;
+  background-color: var(--toggle-color);
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s;
+  border-radius: 0 5px 5px 0;
+  position: relative;
+  top: 20px;
+  user-select: none;
+}
+
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 1rem;
+  font-weight: bold;
+  font-size: 1.2rem;
+}
+
+.logo {
+  background-color: var(--deep-purple);
+  color: white;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Tab Buttons */
+.tab-buttons {
+  display: flex;
+  justify-content: space-around;
+  margin: 0 1rem;
+  background-color: #eee;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.tab-button {
+  flex: 1;
+  padding: 0.75rem;
+  border: none;
+  background: none;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  user-select: none;
+}
+
+.tab-button.active {
+  background: var(--deep-purple);
+  color: white;
+}
+
+/* Sidebar Action Button */
+#sidebarAction {
+  background: linear-gradient(to right, var(--deep-purple), var(--light-purple));
+  color: white;
+  border: none;
+  padding: 0.75rem;
+  margin: 1rem;
+  border-radius: 12px;
+  font-weight: bold;
+  cursor: pointer;
+  user-select: none;
+}
+
+/* Chat and Document List Items */
+.chat-item, .doc-item {
+  background-color: var(--chat-bg);
+  padding: 0.75rem 1rem;
+  margin: 0.25rem 1rem;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: background-color 0.2s;
+  user-select: none;
+}
+
+.chat-item:hover, .doc-item:hover {
+  background-color: #e0e7ff;
+}
+
+.chat-item span, .doc-item span {
+  flex-grow: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Delete Button */
+.delete-btn {
+  background: transparent;
+  border: none;
+  color: #888;
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  padding: 0 6px;
+  user-select: none;
+  transition: color 0.2s;
+}
+
+.delete-btn:hover {
+  color: #f87171; /* red */
+}
+
+/* Main Chat Panel */
+.main-panel {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  background: var(--chat-bg);
+}
+
+.panel-header {
+  padding: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #ddd;
+}
+
+.panel-header h1 {
+  margin: 0;
+}
+
+.status-box {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.theme-toggle {
+  font-size: 1.5rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text);
+  user-select: none;
+}
+
+/* Chat Log */
+.chat-log {
+  flex: 1;
+  padding: 1rem;
+  overflow-y: auto;
+}
+
+.bot-message {
+  margin-bottom: 1rem;
+}
+
+/* User bubble: keep black text in dark mode */
+.bubble {
+  background-color: var(--bubble-bg);
+  padding: 1rem;
+  border-radius: 12px;
+  max-width: 70%;
+  font-size: 0.95rem;
+  color: var(--text);
+}
+
+/* Override user bubble text color in dark mode to black */
+body.dark .bot-message .bubble[style*="background:#dbeafe"] {
+  color: black !important;
+  background-color: #dbeafe !important; /* keep background same */
+}
+
+.timestamp {
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
+  color: gray;
+}
+
+/* Chat Input */
+.chat-input {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  border-top: 1px solid #ccc;
+}
+
+.chat-input input[type="text"] {
+  flex: 1;
+  padding: 0.75rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 1rem;
+  color: var(--text);
+  background-color: var(--chat-bg);
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.chat-input input[type="text"]::placeholder {
+  color: #999;
+}
+
+.chat-input button {
+  background: var(--deep-purple);
+  color: white;
+  padding: 0.75rem 1rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1.1rem;
+  user-select: none;
+}
+
+.chat-input button:hover {
+  background: var(--light-purple);
+}
+
+.hidden {
+  display: none;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .sidebar {
+    position: absolute;
+    height: 100%;
+  }
+}

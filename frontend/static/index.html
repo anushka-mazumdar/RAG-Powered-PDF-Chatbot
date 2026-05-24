@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RAG Assistant</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css">
+  <style>
+    .sidebar-toggle {
+      width: 36px;
+      height: 36px;
+      background-color: var(--toggle-color);
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      box-shadow: 0 0 4px rgba(0, 0, 0, 0.1);
+      position: absolute;
+      left: 300px;
+      top: 20px;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.3s ease;
+      z-index: 20;
+    }
+
+    .sidebar.hidden + .sidebar-toggle {
+      left: 0;
+      transform: translateX(0);
+    }
+  </style>
+</head>
+<body class="light">
+  <div class="app-container">
+    <!-- Sidebar -->
+    <aside id="sidebar" class="sidebar">
+      <div class="sidebar-header">
+        <div class="logo">💬</div>
+        <h2>RAG Assistant</h2>
+      </div>
+      <div class="tab-buttons">
+        <button class="tab-button active" data-tab="chats">
+          <span>Chats</span>
+        </button>
+        <button class="tab-button" data-tab="docs">
+          <span>Docs</span>
+        </button>
+      </div>
+      <button id="sidebarAction" class="new-chat">+ New Chat</button>
+      <div id="chats" class="tab-section">
+        <div id="chatsList"></div>
+      </div>
+      <div id="docs" class="tab-section hidden">
+        <div id="docsList"></div>
+      </div>
+    </aside>
+
+    <!-- Sidebar Toggle Arrow -->
+    <!-- Removed sidebar toggle button as per user request -->
+    <!-- <div id="sidebarToggle" class="sidebar-toggle">◀</div> -->
+
+    <!-- Main Chat Panel -->
+    <main class="main-panel">
+      <div class="panel-header">
+        <div>
+          <h1>RAG Chatbot</h1>
+          <p>Ask questions about your uploaded documents</p>
+        </div>
+        <div class="status-box">
+          <button id="themeToggle" class="theme-toggle">🌙</button>
+        </div>
+      </div>
+
+      <div id="chatLog" class="chat-log">
+        <div class="bot-message">
+          <div class="bubble">
+            Hello! I'm your RAG Assistant. I can help you find information from your uploaded PDF documents. What would you like to know?
+          </div>
+          <div class="timestamp">Just now</div>
+        </div>
+      </div>
+
+      <form id="chatForm" class="chat-input">
+        <input type="text" id="questionInput" placeholder="Ask me anything about your documents..." maxlength="1000" required />
+        <button type="submit">➤</button>
+      </form>
+    </main>
+  </div>
+
+  <script src="/static/script.js"></script>
+</body>
+</html>
